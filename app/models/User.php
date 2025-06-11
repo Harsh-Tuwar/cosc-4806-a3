@@ -3,6 +3,7 @@
 class User {
 
     private $minPassLength = 8;
+    private $maxFailedAttempts = 3;
   
     public $username;
     public $password;
@@ -33,6 +34,11 @@ class User {
         $statement->bindValue(':name', $username);
         $statement->execute();
         $rows = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if ($rows['locked'] === 1) {
+          $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
+          return 0;
+        }
       
     		if (password_verify($password, $rows['password'])) {
     			$_SESSION['auth'] = 1;
@@ -40,14 +46,30 @@ class User {
     			unset($_SESSION['failedAuth']);
           return 1;
     		} else {
-    			if(isset($_SESSION['failedAuth'])) {
-    				$_SESSION['failedAuth'] ++; //increment
-    			} else {
-    				$_SESSION['failedAuth'] = 1;
-    			}
-          $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
+    			$this->failed_attempts_check($username);
           return 0;
     		}
+    }
+
+    private function lock_account($username) {
+      $db = db_connect();
+      $query = 'UPDATE users SET locked = 1 WHERE username = :username';
+      $stmt = $db->prepare($query);
+      $stmt->bindParam(':username', $username);
+      $stmt->execute();
+    }
+
+    private function failed_attempts_check($username) {
+      if (isset($_SESSION['failedAuth']) && $_SESSION['failedAuth'] >= $this->maxFailedAttempts) {
+        $this->lock_account($username);
+        $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
+      } else if(isset($_SESSION['failedAuth'])) {
+        $_SESSION['failedAuth'] ++; //increment
+      } else {
+        $_SESSION['failedAuth'] = 1;
+      }
+    
+      $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
     }
 
     private function existing_user_check($username) {
