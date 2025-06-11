@@ -14,8 +14,8 @@ define('LOGS', ROOT . DS . 'logs');
 define('FILES', ROOT . DS. 'files');
 
 // ---------------------  NEW DATABASE TABLE -------------------------
-define('DB_HOST',         'xxw.h.filess.io');
-define('DB_USER',         '4806_sentenceby'); 
+define('DB_HOST',         $_ENV['DB_HOST']);
+define('DB_USER',         $_ENV['DB_USER']); 
 define('DB_PASS',         $_ENV['DB_PASS']);
-define('DB_DATABASE',     '4806_sentenceby');
-define('DB_PORT',         '3305');
+define('DB_DATABASE',     $_ENV['DB_DATABASE']);
+define('DB_PORT',         $_ENV['DB_PORT']);
