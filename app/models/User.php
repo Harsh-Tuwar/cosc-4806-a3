@@ -58,15 +58,18 @@ class User {
       $checkStmt->execute();
 
       if ($checkStmt->fetchColumn() > 0) {
-          echo "Username already exists.";
-          die; 
+          $_SESSION['has_error'] = true;
+          $_SESSION['signup_error'] = "Username already exists.";
+          header('Location: /create');
+          die;
       }
 
       // Validate password strength
       if (!$this->is_valid_password($password)) {
-            // return ['success' => false, 'message' => 'Password does not meet security requirements.'];
-          echo "Password does not meet security requirements.";
-          die;
+        $_SESSION['has_error'] = true;
+        $_SESSION['signup_error'] = "Password must be at least 8 characters long and include uppercase, lowercase, digit, and special character.";
+        header('Location: /create');
+        die;
       }
 
       // Hash the password securely
@@ -74,17 +77,21 @@ class User {
 
       // Insert new user
       $query = 'INSERT INTO users (username, password) VALUES (:username, :password)';
-      $stmt = $conn->prepare($query);
+      $stmt = db->prepare($query);
       $stmt->bindParam(':username', $lwr_username);
       $stmt->bindParam(':password', $hashedPassword);
 
       if ($stmt->execute()) {
         header('Location: /login');
+        unset($_SESSION['has_error']);
+        unset($_SESSION['signup_error']);
         die;
       } else {
-          echo "Error creating user.";
+          $_SESSION['has_error'] = true;
+          $_SESSION['signup_error'] = "Error createing account. Probably a server error. Try again later.";
+          header('Location: /create');
           die;
-      }
+      }      
     }
   
     // Helper function for password validation

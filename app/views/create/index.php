@@ -9,6 +9,12 @@
         </div>
     </div>
 
+    <?php if (isset($_SESSION['signup_error'])): ?>
+        <div class="alert alert-danger">
+            <?php echo $_SESSION['signup_error']; ?>
+        </div>
+    <?php endif; ?>
+
     <div class="row">
         <div class="col-sm-auto">
         <form action="/create/new_account" method="post" >
