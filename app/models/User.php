@@ -2,9 +2,12 @@
 
 class User {
 
+    private $minPassLength = 8;
+  
     public $username;
     public $password;
     public $auth = false;
+
 
     public function __construct() {
         
@@ -47,14 +50,13 @@ class User {
     		}
     }
 
-    public function create($username, $password) {
-      $lwr_username = strtolower($username);
+    private function existing_user_check($username) {
       $db = db_connect();
-
+      
       // Check if username already exists
       $checkQuery = 'SELECT COUNT(*) FROM users WHERE username = :username';
       $checkStmt = $db->prepare($checkQuery);
-      $checkStmt->bindParam(':username', $lwr_username);
+      $checkStmt->bindParam(':username', $username);
       $checkStmt->execute();
 
       if ($checkStmt->fetchColumn() > 0) {
@@ -62,6 +64,13 @@ class User {
           header('Location: /create');
           die;
       }
+    }
+
+    public function create($username, $password) {
+      $lwr_username = strtolower($username);
+      $db = db_connect();
+
+      $this->existing_user_check($lwr_username);
 
       // Validate password strength
       if (!$this->is_valid_password($password)) {
@@ -92,9 +101,8 @@ class User {
   
     // Helper function for password validation
     private function is_valid_password($password) {
-      $minLength = 8;
       return (
-          strlen($password) >= $minLength &&
+          strlen($password) >= $minPassLength &&
           preg_match('/[A-Z]/', $password) &&    // At least one uppercase
           preg_match('/[a-z]/', $password) &&    // At least one lowercase
           preg_match('/[0-9]/', $password) &&    // At least one digit

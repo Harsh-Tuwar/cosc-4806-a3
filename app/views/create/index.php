@@ -29,8 +29,8 @@
           </div>
           <br>
         <div class="col-lg-12">
-                <button type="submit" class="btn btn-primary">Create</button>
-                <a href="/login" class="btn btn-info" role="button">Already have an account? Sign in.</a> 
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a href="/login" class="btn btn-info" role="button">Already have an account? Sign in.</a> 
         </div>
         </fieldset>
         </form> 
