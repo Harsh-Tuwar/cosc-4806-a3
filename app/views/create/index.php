@@ -28,7 +28,10 @@
             <input required type="password" class="form-control" name="password">
           </div>
           <br>
-          <button type="submit" class="btn btn-primary">Create</button>
+        <div class="col-lg-12">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a href="/login" class="btn btn-info" role="button">Already have an account? Sign in.</a> 
+        </div>
         </fieldset>
         </form> 
       </div>
