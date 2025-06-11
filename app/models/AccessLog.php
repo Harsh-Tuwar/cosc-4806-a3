@@ -5,10 +5,11 @@
 
     public function logAccess($username, $success) {
       $db = db_connect();
-      $query = 'INSERT INTO access_logs (username, success_attempt, timestamp) VALUES (:username, :success)';
+      $query = 'INSERT INTO access_logs (username, success_attempt, timestamp) VALUES (:username, :success, NOW())';
       $stmt = $db->prepare($query);
       $stmt->bindParam(':username', $username);
       $stmt->bindParam(':success', $success);
-      $statement->execute();
+      $stmt->execute();
+      return;
     }
   }  

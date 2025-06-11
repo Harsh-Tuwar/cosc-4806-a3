@@ -1,5 +1,7 @@
 <?php
 
+require_once 'app/models/AccessLog.php';
+
 class User {
 
     public $username;
@@ -25,7 +27,7 @@ class User {
          */
     		$username = strtolower($username);
     		$db = db_connect();
-        $access_log = $this->model('AccessLog');
+        $access_log = new AccessLog();
       
         $statement = $db->prepare("select * from users WHERE username = :name;");
         $statement->bindValue(':name', $username);
@@ -36,7 +38,7 @@ class User {
     			$_SESSION['auth'] = 1;
     			$_SESSION['username'] = ucwords($username);
     			unset($_SESSION['failedAuth']);
-          $access_log->logAccess($username, true);
+          $access_log->logAccess($username, 1);
     			header('Location: /home');
     			die;
     		} else {
@@ -45,9 +47,10 @@ class User {
     			} else {
     				$_SESSION['failedAuth'] = 1;
     			}
-          $access_log->logAccess($username, false);
+          $access_log->logAccess($username, 0);
+          $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
     			header('Location: /login');
-    			die;
+          die;
     		}
     }
 
@@ -62,7 +65,6 @@ class User {
       $checkStmt->execute();
 
       if ($checkStmt->fetchColumn() > 0) {
-          $_SESSION['has_error'] = true;
           $_SESSION['signup_error'] = "Username already exists.";
           header('Location: /create');
           die;
@@ -70,7 +72,6 @@ class User {
 
       // Validate password strength
       if (!$this->is_valid_password($password)) {
-        $_SESSION['has_error'] = true;
         $_SESSION['signup_error'] = "Password must be at least 8 characters long and include uppercase, lowercase, digit, and special character.";
         header('Location: /create');
         die;
@@ -87,11 +88,9 @@ class User {
 
       if ($stmt->execute()) {
         header('Location: /login');
-        unset($_SESSION['has_error']);
         unset($_SESSION['signup_error']);
         die;
       } else {
-          $_SESSION['has_error'] = true;
           $_SESSION['signup_error'] = "Error createing account. Probably a server error. Try again later.";
           header('Location: /create');
           die;

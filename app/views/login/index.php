@@ -9,6 +9,14 @@
         </div>
     </div>
 
+		<?php if (isset($_SESSION['login_error'])): ?>
+				<div class="alert alert-danger">
+						<?php 
+							echo $_SESSION['login_error'];
+						?>
+				</div>
+		<?php endif; ?>
+
 		<div class="row">
 		    <div class="col-sm-auto">
 				<form action="/login/verify" method="post" >

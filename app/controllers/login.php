@@ -11,7 +11,7 @@ class Login extends Controller {
 			$password = $_REQUEST['password'];
 		
 			$user = $this->model('User');
-			$user->authenticate($username, $password); 
+			
+			$success_attempt = $user->authenticate($username, $password);
     }
-
 }
