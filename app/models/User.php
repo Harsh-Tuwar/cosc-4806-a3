@@ -25,6 +25,8 @@ class User {
          */
     		$username = strtolower($username);
     		$db = db_connect();
+        $access_log = $this->model('AccessLog');
+      
         $statement = $db->prepare("select * from users WHERE username = :name;");
         $statement->bindValue(':name', $username);
         $statement->execute();
@@ -34,6 +36,7 @@ class User {
     			$_SESSION['auth'] = 1;
     			$_SESSION['username'] = ucwords($username);
     			unset($_SESSION['failedAuth']);
+          $access_log->logAccess($username, true);
     			header('Location: /home');
     			die;
     		} else {
@@ -42,6 +45,7 @@ class User {
     			} else {
     				$_SESSION['failedAuth'] = 1;
     			}
+          $access_log->logAccess($username, false);
     			header('Location: /login');
     			die;
     		}

@@ -9,5 +9,6 @@
       $stmt = $db->prepare($query);
       $stmt->bindParam(':username', $username);
       $stmt->bindParam(':success', $success);
+      $statement->execute();
     }
   }  
