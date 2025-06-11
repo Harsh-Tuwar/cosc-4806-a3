@@ -1,7 +1,5 @@
 <?php
 
-require_once 'app/models/AccessLog.php';
-
 class User {
 
     public $username;
@@ -27,7 +25,6 @@ class User {
          */
     		$username = strtolower($username);
     		$db = db_connect();
-        $access_log = new AccessLog();
       
         $statement = $db->prepare("select * from users WHERE username = :name;");
         $statement->bindValue(':name', $username);
@@ -38,19 +35,15 @@ class User {
     			$_SESSION['auth'] = 1;
     			$_SESSION['username'] = ucwords($username);
     			unset($_SESSION['failedAuth']);
-          $access_log->logAccess($username, 1);
-    			header('Location: /home');
-    			die;
+          return 1;
     		} else {
     			if(isset($_SESSION['failedAuth'])) {
     				$_SESSION['failedAuth'] ++; //increment
     			} else {
     				$_SESSION['failedAuth'] = 1;
     			}
-          $access_log->logAccess($username, 0);
           $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
-    			header('Location: /login');
-          die;
+          return 0;
     		}
     }
 
