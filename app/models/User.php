@@ -35,7 +35,9 @@ class User {
         $statement->execute();
         $rows = $statement->fetch(PDO::FETCH_ASSOC);
 
-        if ($rows['locked'] === 1) {
+        if ($rows['locked_at'] !== null && strtotime($rows['locked_at']) + 60 < time()) {
+          $this->unlock_account($username);
+        } else if ($rows['locked_at'] !== null) {
           $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
           return 0;
         }
@@ -53,7 +55,15 @@ class User {
 
     private function lock_account($username) {
       $db = db_connect();
-      $query = 'UPDATE users SET locked = 1 WHERE username = :username';
+      $query = 'UPDATE users SET locked = 1, locked_at = NOW() WHERE username = :username';
+      $stmt = $db->prepare($query);
+      $stmt->bindParam(':username', $username);
+      $stmt->execute();
+    }
+
+    private function unlock_account($username) {
+      $db = db_connect();
+      $query = 'UPDATE users SET locked = 0, locked_at = NULL WHERE username = :username';
       $stmt = $db->prepare($query);
       $stmt->bindParam(':username', $username);
       $stmt->execute();
