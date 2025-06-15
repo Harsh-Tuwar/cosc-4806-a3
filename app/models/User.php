@@ -40,14 +40,14 @@ class User {
       //     return 0;
       //   }
 
-      $test_date = time();
+      // $test_date = time();
       
-      echo $test_date; echo " ==>>>> " . date('r', $test_date) . "."; 
-      echo "<br>";
-      echo $rows['locked_at']; echo " ==>>>> " . date('r', strtotime($rows['locked_at'])) . ".";
-      echo "<br>";
-      echo strtotime($rows['locked_at']) + 60; echo " ==>>>> " . date('r', strtotime($rows['locked_at']) + 60) . ".";
-      die;
+      // echo $test_date; echo " ==>>>> " . date('r', $test_date) . "."; 
+      // echo "<br>";
+      // echo $rows['locked_at']; echo " ==>>>> " . date('r', strtotime($rows['locked_at'])) . ".";
+      // echo "<br>";
+      // echo strtotime($rows['locked_at']) + 60; echo " ==>>>> " . date('r', strtotime($rows['locked_at']) + 60) . ".";
+      // die;
       
       if ($rows['locked_at'] !== null && strtotime($rows['locked_at']) + 60 < time()) {
         $this->unlock_account($username);
@@ -85,15 +85,17 @@ class User {
     }
 
     private function failed_attempts_check($username) {
+      if(isset($_SESSION['failedAuth'])) {
+        $_SESSION['failedAuth']++; //increment
+      } else {
+        $_SESSION['failedAuth'] = 1;
+      }
+
+      $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
+      
       if (isset($_SESSION['failedAuth']) && $_SESSION['failedAuth'] >= $this->maxFailedAttempts) {
         $this->lock_account($username);
         $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
-      } else if(isset($_SESSION['failedAuth'])) {
-        $_SESSION['failedAuth']++; //increment
-        $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
-      } else {
-        $_SESSION['failedAuth'] = 1;
-        $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
       }
     }
 
