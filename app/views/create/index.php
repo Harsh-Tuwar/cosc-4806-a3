@@ -1,6 +1,6 @@
     <?php require_once 'app/views/templates/headerPublic.php' ?>
 
-    <main role="main" class="container mt-5">
+    <main role="main" class="container mt-5 flex-grow-1">
       <div class="row justify-content-center">
         <div class="col-md-6">
 

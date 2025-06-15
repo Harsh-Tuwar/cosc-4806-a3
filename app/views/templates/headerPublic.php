@@ -13,5 +13,23 @@ if (isset($_SESSION['auth']) == 1) {
     <meta name="viewport" content="width=device-width">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <style>
+        html, body {
+          height: 100%;
+        }
+        
+        body {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        main {
+          flex: 1 0 auto;
+        }
+        
+        footer {
+          flex-shrink: 0;
+        }
+    </style>
 </head>
 <body>
