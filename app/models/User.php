@@ -10,9 +10,7 @@ class User {
     public $auth = false;
 
 
-    public function __construct() {
-        
-    }
+    public function __construct() {}
 
     public function test () {
       $db = db_connect();
@@ -35,35 +33,52 @@ class User {
         $statement->execute();
         $rows = $statement->fetch(PDO::FETCH_ASSOC);
 
-        if ($rows['locked_at'] !== null && strtotime($rows['locked_at']) + 60 < time()) {
-          $this->unlock_account($username);
-        } else if ($rows['locked_at'] !== null) {
-          $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
-          return 0;
-        }
+      //   if ($rows['locked_at'] !== null && strtotime($rows['locked_at']) + 60 < time()) {
+      //     $this->unlock_account($username);
+      //   } else if ($rows['locked_at'] !== null) {
+      //     $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
+      //     return 0;
+      //   }
+
+      $test_date = time();
       
-    		if (password_verify($password, $rows['password'])) {
-    			$_SESSION['auth'] = 1;
-    			$_SESSION['username'] = ucwords($username);
-    			unset($_SESSION['failedAuth']);
-          return 1;
-    		} else {
-    			$this->failed_attempts_check($username);
-          return 0;
-    		}
+      echo $test_date; echo " ==>>>> " . date('r', $test_date) . "."; 
+      echo "<br>";
+      echo $rows['locked_at']; echo " ==>>>> " . date('r', strtotime($rows['locked_at'])) . ".";
+      echo "<br>";
+      echo strtotime($rows['locked_at']) + 60; echo " ==>>>> " . date('r', strtotime($rows['locked_at']) + 60) . ".";
+      die;
+      
+      if ($rows['locked_at'] !== null && strtotime($rows['locked_at']) + 60 < time()) {
+        $this->unlock_account($username);
+      }
+
+      if (password_verify($password, $rows['password'])) {
+        $_SESSION['auth'] = 1;
+        $_SESSION['username'] = ucwords($username);
+        unset($_SESSION['failedAuth']);
+        return 1;
+      } else {
+        $this->failed_attempts_check($username);
+        return 0;
+      }
     }
 
     private function lock_account($username) {
       $db = db_connect();
-      $query = 'UPDATE users SET locked = 1, locked_at = NOW() WHERE username = :username';
+      $query = 'UPDATE users SET locked_at = :locked_at WHERE username = :username';
       $stmt = $db->prepare($query);
+
+      $lockedAt = date('Y-m-d H:i:s');
+
+      $stmt->bindParam(':locked_at', $lockedAt);
       $stmt->bindParam(':username', $username);
       $stmt->execute();
     }
 
     private function unlock_account($username) {
       $db = db_connect();
-      $query = 'UPDATE users SET locked = 0, locked_at = NULL WHERE username = :username';
+      $query = 'UPDATE users SET locked_at = NULL WHERE username = :username';
       $stmt = $db->prepare($query);
       $stmt->bindParam(':username', $username);
       $stmt->execute();
@@ -74,12 +89,12 @@ class User {
         $this->lock_account($username);
         $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
       } else if(isset($_SESSION['failedAuth'])) {
-        $_SESSION['failedAuth'] ++; //increment
+        $_SESSION['failedAuth']++; //increment
+        $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
       } else {
         $_SESSION['failedAuth'] = 1;
+        $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
       }
-    
-      $_SESSION['login_error'] = "Invalid username or password. Failed attempts: " . $_SESSION['failedAuth'] . ".";
     }
 
     private function existing_user_check($username) {
@@ -98,6 +113,7 @@ class User {
       }
     }
 
+  
     public function create($username, $password) {
       $lwr_username = strtolower($username);
       $db = db_connect();
