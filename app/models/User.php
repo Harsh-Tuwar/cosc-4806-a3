@@ -4,11 +4,11 @@ class User {
 
     private $minPassLength = 8;
     private $maxFailedAttempts = 3;
+    private $lockoutDuration = 60; // 1 minutes in seconds;
   
     public $username;
     public $password;
     public $auth = false;
-
 
     public function __construct() {}
 
@@ -27,41 +27,31 @@ class User {
          */
     		$username = strtolower($username);
     		$db = db_connect();
-      
+        $nowTime = time();
+    
         $statement = $db->prepare("select * from users WHERE username = :name;");
         $statement->bindValue(':name', $username);
         $statement->execute();
         $rows = $statement->fetch(PDO::FETCH_ASSOC);
 
-      //   if ($rows['locked_at'] !== null && strtotime($rows['locked_at']) + 60 < time()) {
-      //     $this->unlock_account($username);
-      //   } else if ($rows['locked_at'] !== null) {
-      //     $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
-      //     return 0;
-      //   }
+        if ($rows['locked_at']) {
+          if (strtotime($rows['locked_at']) + $this->lockoutDuration <= $nowTime) {
+            $this->unlock_account($username);
+          } else {
+            $this->failed_attempts_check($username);
+            return 0;
+          }
+        }
 
-      // $test_date = time();
-      
-      // echo $test_date; echo " ==>>>> " . date('r', $test_date) . "."; 
-      // echo "<br>";
-      // echo $rows['locked_at']; echo " ==>>>> " . date('r', strtotime($rows['locked_at'])) . ".";
-      // echo "<br>";
-      // echo strtotime($rows['locked_at']) + 60; echo " ==>>>> " . date('r', strtotime($rows['locked_at']) + 60) . ".";
-      // die;
-      
-      if ($rows['locked_at'] !== null && strtotime($rows['locked_at']) + 60 < time()) {
-        $this->unlock_account($username);
-      }
-
-      if (password_verify($password, $rows['password'])) {
-        $_SESSION['auth'] = 1;
-        $_SESSION['username'] = ucwords($username);
-        unset($_SESSION['failedAuth']);
-        return 1;
-      } else {
-        $this->failed_attempts_check($username);
-        return 0;
-      }
+        if (password_verify($password, $rows['password'])) {
+          $_SESSION['auth'] = 1;
+          $_SESSION['username'] = ucwords($username);
+          unset($_SESSION['failedAuth']);
+          return 1;
+        } else {
+          $this->failed_attempts_check($username);
+          return 0;
+        }
     }
 
     private function lock_account($username) {
@@ -95,7 +85,8 @@ class User {
       
       if (isset($_SESSION['failedAuth']) && $_SESSION['failedAuth'] >= $this->maxFailedAttempts) {
         $this->lock_account($username);
-        $_SESSION['login_error'] = "Too many failed attempts. Try again later.";
+
+        $_SESSION['login_error'] = 'Too many failed attempts. Account locked for 1 minutes.';
       }
     }
 
@@ -115,7 +106,6 @@ class User {
       }
     }
 
-  
     public function create($username, $password) {
       $lwr_username = strtolower($username);
       $db = db_connect();
