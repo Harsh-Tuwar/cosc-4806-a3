@@ -106,7 +106,7 @@ class User {
 
       // Insert new user
       $query = 'INSERT INTO users (username, password) VALUES (:username, :password)';
-      $stmt = db->prepare($query);
+      $stmt = $db->prepare($query);
       $stmt->bindParam(':username', $lwr_username);
       $stmt->bindParam(':password', $hashedPassword);
 
